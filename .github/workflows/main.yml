@@ -43,11 +43,11 @@ jobs:
       run: mkdir release
 
     # Step 7: Copy the main executable into the release folder
-    # THIS IS THE CORRECTED STEP: The path no longer contains '/src/'
     - name: Copy Executable to Release Folder
       run: copy build\Release\AdvancedTicTacToe.exe release
 
     # Step 8: Use windeployqt to automatically find and copy Qt DLLs
+    # THIS IS THE CORRECTED STEP: The ${{ env.QT_DIR }} variable is restored.
     - name: Deploy Qt Libraries
       shell: pwsh
       run: |
