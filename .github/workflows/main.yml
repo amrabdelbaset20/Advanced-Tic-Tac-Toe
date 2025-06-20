@@ -1,0 +1,64 @@
+name: C++ CI/CD Pipeline
+
+# This workflow runs on any push to the main branch
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-test-release:
+    # We must run on Windows because windeployqt is a Windows tool
+    runs-on: windows-latest
+
+    steps:
+    # Step 1: Check out the repository code
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    # Step 2: Install Qt on the runner
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: '6.4.0' # Using a stable Qt6 version
+
+    # Step 3: Configure the project with CMake for Release mode
+    - name: Configure CMake (Release)
+      run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+    # Step 4: Build the project
+    # The --config Release flag is crucial for Visual Studio generators
+    - name: Build Project
+      run: cmake --build build --config Release
+
+    # Step 5: Run the Google Tests
+    - name: Run Google Tests
+      run: |
+        cd build
+        ctest --output-on-failure --build-config Release
+
+    # Step 6: Create a folder for our release package
+    - name: Create Release Directory
+      run: mkdir release
+
+    # Step 7: Use windeployqt to automatically find and copy Qt DLLs
+    - name: Deploy Qt Libraries
+      run: |
+        cd release
+        ${{ env.QT_INSTALL_DIR }}\${{ env.QT_VERSION }}\msvc2019_64\bin\windeployqt.exe --release ..\build\src\Release\AdvancedTicTacToe.exe
+    
+    # Step 8: Copy the main executable into the release folder
+    - name: Copy Executable to Release Folder
+      run: copy build\src\Release\AdvancedTicTacToe.exe release
+
+    # Step 9: Create a ZIP archive of the release folder
+    - name: Create ZIP Archive
+      run: |
+        powershell: Compress-Archive -Path release\* -DestinationPath AdvancedTicTacToe_Windows.zip
+        
+    # Step 10: Upload the ZIP file as a build artifact
+    # This makes the file downloadable from the Actions tab on GitHub
+    - name: Upload Release Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: AdvancedTicTacToe-Windows
+        path: AdvancedTicTacToe_Windows.zip
