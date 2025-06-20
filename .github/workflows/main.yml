@@ -14,6 +14,9 @@ jobs:
     # Step 1: Check out the repository code
     - name: Checkout Repository
       uses: actions/checkout@v4
+      with:
+        # We need to fetch submodules because our project now includes googletest locally
+        submodules: 'true'
 
     # Step 2: Install Qt on the runner
     - name: Install Qt
@@ -40,20 +43,23 @@ jobs:
     - name: Create Release Directory
       run: mkdir release
 
-    # Step 7: Use windeployqt to automatically find and copy Qt DLLs
-    - name: Deploy Qt Libraries
-      run: |
-        cd release
-        ${{ env.QT_INSTALL_DIR }}\${{ env.QT_VERSION }}\msvc2019_64\bin\windeployqt.exe --release ..\build\src\Release\AdvancedTicTacToe.exe
-    
-    # Step 8: Copy the main executable into the release folder
+    # Step 7: Copy the main executable into the release folder
     - name: Copy Executable to Release Folder
       run: copy build\src\Release\AdvancedTicTacToe.exe release
 
+    # Step 8: Use windeployqt to automatically find and copy Qt DLLs
+    # THIS IS THE CORRECTED STEP: It uses the QT_DIR environment variable
+    # provided by the install-qt-action, which is much more reliable.
+    - name: Deploy Qt Libraries
+      shell: pwsh
+      run: |
+        & "${{ env.QT_DIR }}\bin\windeployqt.exe" --release "release\AdvancedTicTacToe.exe"
+
     # Step 9: Create a ZIP archive of the release folder
     - name: Create ZIP Archive
+      shell: pwsh
       run: |
-        powershell: Compress-Archive -Path release\* -DestinationPath AdvancedTicTacToe_Windows.zip
+        Compress-Archive -Path release\* -DestinationPath AdvancedTicTacToe_Windows.zip
         
     # Step 10: Upload the ZIP file as a build artifact
     # This makes the file downloadable from the Actions tab on GitHub
