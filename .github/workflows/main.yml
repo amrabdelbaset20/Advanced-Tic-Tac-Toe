@@ -47,11 +47,16 @@ jobs:
       run: copy build\Release\AdvancedTicTacToe.exe release
 
     # Step 8: Use windeployqt to automatically find and copy Qt DLLs
-    # THIS IS THE CORRECTED COMMAND. It uses the Qt installation directory variable.
+    # THIS IS THE NEW, MORE ROBUST METHOD.
     - name: Deploy Qt Libraries
       shell: pwsh
       run: |
-        & "${{ env.QT_DIR }}\bin\windeployqt.exe" --release "release\AdvancedTicTacToe.exe"
+        # First, add the Qt bin directory to the system PATH for this step.
+        # This makes 'windeployqt.exe' available like any other system command.
+        $env:PATH += ";${{ env.QT_DIR }}\bin"
+        
+        # Now, we can simply call the program directly.
+        windeployqt.exe --release "release\AdvancedTicTacToe.exe"
 
     # Step 9: Create a ZIP archive of the release folder
     - name: Create ZIP Archive
