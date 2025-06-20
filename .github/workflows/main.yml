@@ -47,7 +47,7 @@ jobs:
       run: copy build\Release\AdvancedTicTacToe.exe release
 
     # Step 8: Use windeployqt to automatically find and copy Qt DLLs
-    # THIS IS THE CORRECTED STEP: The ${{ env.QT_DIR }} variable is restored.
+    # THIS IS THE CORRECTED COMMAND. It uses the Qt installation directory variable.
     - name: Deploy Qt Libraries
       shell: pwsh
       run: |
