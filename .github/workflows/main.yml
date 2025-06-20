@@ -22,14 +22,13 @@ jobs:
     - name: Install Qt
       uses: jurplel/install-qt-action@v3
       with:
-        version: '6.4.0' # Using a stable Qt6 version
+        version: '6.4.0'
 
     # Step 3: Configure the project with CMake for Release mode
     - name: Configure CMake (Release)
       run: cmake -B build -DCMAKE_BUILD_TYPE=Release
 
     # Step 4: Build the project
-    # The --config Release flag is crucial for Visual Studio generators
     - name: Build Project
       run: cmake --build build --config Release
 
@@ -44,12 +43,11 @@ jobs:
       run: mkdir release
 
     # Step 7: Copy the main executable into the release folder
+    # THIS IS THE CORRECTED STEP: The path no longer contains '/src/'
     - name: Copy Executable to Release Folder
-      run: copy build\src\Release\AdvancedTicTacToe.exe release
+      run: copy build\Release\AdvancedTicTacToe.exe release
 
     # Step 8: Use windeployqt to automatically find and copy Qt DLLs
-    # THIS IS THE CORRECTED STEP: It uses the QT_DIR environment variable
-    # provided by the install-qt-action, which is much more reliable.
     - name: Deploy Qt Libraries
       shell: pwsh
       run: |
@@ -62,7 +60,6 @@ jobs:
         Compress-Archive -Path release\* -DestinationPath AdvancedTicTacToe_Windows.zip
         
     # Step 10: Upload the ZIP file as a build artifact
-    # This makes the file downloadable from the Actions tab on GitHub
     - name: Upload Release Artifact
       uses: actions/upload-artifact@v4
       with:
